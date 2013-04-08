@@ -7,23 +7,45 @@ class Player
   def play_turn(warrior)
     @warrior = warrior
 
-    enemy = look_enemy
+    enemies = look_for_enemies
 
-    if enemy
-      warrior.attack! enemy
-    elsif warrior.health < 13
-      warrior.rest!
+    if enemies.empty?
+      captives = look_for_captives
+
+      if warrior.health < 13
+        warrior.rest!
+
+      elsif captives.empty?
+        warrior.walk! warrior.direction_of_stairs
+
+      else
+        warrior.rescue! captives[0]
+
+      end
+    elsif enemies.length >= 2
+      warrior.bind! enemies[0]
+
     else
-      warrior.walk! warrior.direction_of_stairs
+        warrior.attack! enemies[0]
+
     end
 
   end
 
-  def look_enemy()
+  def look_for_enemies()
+    direcctions = []
     @directions.each{ |direction|
-      return direction if @warrior.feel(direction).enemy?
+      direcctions << direction if @warrior.feel(direction).enemy?
     }
-    false
+    direcctions
+  end
+
+  def look_for_captives()
+    captives = []
+    @directions.each{ |direction|
+      captives << direction if @warrior.feel(direction).captive?
+    }
+    captives
   end
 
 end
