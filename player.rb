@@ -1,7 +1,11 @@
 class Player
 
   def initialize()
-    @directions = [:forward, :left, :right , :backward]
+    @directions = [:left, :forward, :right , :backward]
+
+    @directions1 = [:left , :right]
+    @directions2 = [:forward , :backward]
+
     @enemies = []
   end
   
@@ -10,9 +14,30 @@ class Player
 
     enemies = look_for_enemies_arround
 
-    puts enemies
+    tiking = look_for_ticking
 
-    if enemies.empty?
+    if !tiking.empty?
+      captives = look_for_captives_arround
+
+      if !captives.empty?
+        warrior.rescue! captives[0]
+
+      else
+        captives = look_for_captives
+
+        captive_direction = warrior.direction_of captives[0]
+
+        if warrior.feel(captive_direction).enemy?
+          captive_direction = get_other_empty_direction(captive_direction)
+        end
+
+        puts "captive_direction #{captive_direction}"
+
+        warrior.walk! captive_direction
+
+      end
+
+    elsif enemies.empty?
       captives = look_for_captives_arround
 
       if warrior.health < min_fell_health(enemies)
@@ -48,9 +73,7 @@ class Player
             end
 
           else
-            walk_direccion = avoid_stars(warrior.direction_of captives[0])
-            puts "walk_direccion #{walk_direccion}"
-            warrior.walk! walk_direccion
+            warrior.walk! avoid_stars(warrior.direction_of captives[0])
 
           end
 
@@ -76,6 +99,22 @@ class Player
 
     end
 
+  end
+
+  def get_other_empty_direction(direction)
+    if @directions1.include? direction
+      @directions2.each{ |direction|
+        return direction if @warrior.feel(direction).empty?
+      }
+    else
+      @directions1.each{ |direction|
+        return direction if @warrior.feel(direction).empty?
+      }
+    end
+  end
+
+  def look_for_ticking()
+    @warrior.listen.select{|feel| feel.ticking?}
   end
 
   def avoid_stars(direction)
