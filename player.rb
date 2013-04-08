@@ -48,7 +48,10 @@ class Player
             end
 
           else
-            warrior.walk! warrior.direction_of captives[0]
+            walk_direccion = avoid_stars(warrior.direction_of captives[0])
+            puts "walk_direccion #{walk_direccion}"
+            warrior.walk! walk_direccion
+
           end
 
         else
@@ -73,6 +76,16 @@ class Player
 
     end
 
+  end
+
+  def avoid_stars(direction)
+    if @warrior.feel(direction).stairs?
+      @directions.each{ |direction|
+        return direction if @warrior.feel(direction).empty? && !@warrior.feel(direction).stairs?
+      }
+    else
+      direction
+    end
   end
 
   def min_fell_health(enemies)
