@@ -136,7 +136,6 @@ class Player
         else
           warrior.bind! enemies[0]
           @enemies << enemies[0]
-          @captives -= 1
         end
 
       else
@@ -152,6 +151,7 @@ class Player
   def rescue!(direction)
     if @warrior.feel(direction).to_s == "Captive"
       @warrior.rescue! direction
+      @captives -= 1
     else
       @warrior.attack! direction
     end
@@ -288,7 +288,7 @@ class Player
   end
 
   def look_for_enemies()
-    @warrior.listen.select{ |feel| feel.enemy? }
+    @warrior.listen.select{ |feel| feel.enemy?}
   end
 
   def look_for_all_enemies_direction(direction)
