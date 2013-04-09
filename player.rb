@@ -15,6 +15,7 @@ class Player
     ticking = look_for_ticking
 
     if @back_to_rest &&warrior.health < 15
+      puts "rest 1"
       warrior.rest!
       continue = false
     else
@@ -52,7 +53,7 @@ class Player
             continue = false
 
           elsif enemies.empty? && warrior.health < min_feel_health(enemies) && !near_ticking?(ticking)
-            puts "rest 1"  
+            puts "rest 2"
             warrior.rest!
             continue = false
 
@@ -74,7 +75,8 @@ class Player
       if enemies.empty?
         captives = look_for_captives_arround
 
-        if warrior.health < min_feel_health(enemies)
+        if warrior.health < min_feel_health(enemies) && warrior.listen.length > 0
+          puts "rest 3"
           warrior.rest!
 
         elsif @enemies.empty?
@@ -97,6 +99,7 @@ class Player
                 puts "min_health #{min_health(enemies[0])}"
 
                 if warrior.health < min_health(enemies[0].to_s)
+                  puts "rest 4"
                   warrior.rest!
 
                 else
@@ -286,7 +289,6 @@ class Player
 
     enemies.length
     
-    # @warrior.listen.select{ |feel| feel.enemy? } + @enemies.map{|direction| @warrior.feel(direction)}
   end
 
 end
