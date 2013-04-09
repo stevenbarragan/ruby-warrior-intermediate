@@ -16,7 +16,6 @@ class Player
     ticking = look_for_ticking
 
     if @back_to_rest &&warrior.health < 15
-      puts "rest 1"
       warrior.rest!
       continue = false
     else
@@ -25,16 +24,13 @@ class Player
 
     if !ticking.empty? && continue
 
-      puts "near_ticking?(ticking) #{near_ticking?(ticking)}"
 
         all_enemies_arround = look_for_all_enemies_arround
 
         captives = look_for_captives_arround
 
-        puts "less_tiking_distance(ticking) #{less_tiking_distance(ticking)}"
 
         if !captives.empty? && less_tiking_distance(ticking) == 1
-          puts "rescue 1"
           rescue! captives[0]
           continue = false
         else
@@ -43,10 +39,8 @@ class Player
 
           direction = get_other_empty_direction if !direction
 
-          puts "direction #{direction}"
 
           if direction
-            puts "look_for_all_enemies_direction #{look_for_all_enemies_direction(direction)}"
           end
 
           if direction && look_for_all_enemies_direction(direction) <= 2
@@ -54,13 +48,11 @@ class Player
             continue = false
 
           elsif enemies.empty? && warrior.health < min_feel_health(enemies) && !near_ticking?(ticking)
-            puts "rest 2"
             warrior.rest!
             continue = false
 
           elsif enemies.length == 1
             if near_ticking?(ticking)
-              puts "attack 1"
               warrior.attack! enemies[0]
               continue = false
 
@@ -76,11 +68,8 @@ class Player
       if enemies.empty?
         captives = look_for_captives_arround
 
-        puts "look_for_enemies #{look_for_enemies}"
-        puts "count_all_enemies #{count_all_enemies}"
 
         if warrior.health < min_feel_health(enemies) && count_all_enemies > 0
-          puts "rest 3"
           warrior.rest!
 
         elsif @enemies.empty?
@@ -94,16 +83,12 @@ class Player
               enemies = look_for_enemies
 
               if enemies.empty?
-                puts "walk #{warrior.direction_of_stairs}"
                 walk! warrior.direction_of_stairs
               
               else
 
-                puts "enemies #{enemies[0]}"
-                puts "min_health #{min_health(enemies[0])}"
 
                 if warrior.health < min_health(enemies[0].to_s)
-                  puts "rest 4"
                   warrior.rest!
 
                 else
@@ -118,13 +103,11 @@ class Player
             end
 
           else
-            puts "rescue! #{captives[0]}"
             rescue! captives[0]
 
           end
 
         else
-          puts "attack! 2#{@enemies[0]}"
           warrior.attack! @enemies.shift
 
         end
@@ -140,7 +123,6 @@ class Player
 
       else
 
-        puts "attack! 3#{enemies[0]}"
         warrior.attack! enemies[0]
 
       end
@@ -168,7 +150,6 @@ class Player
 
   def near_ticking?(ticking)
     ticking.each{|tick|
-      puts @warrior.distance_of(tick)
       return true if @warrior.distance_of(tick) < 3
     }
     false
@@ -306,8 +287,6 @@ class Player
 
   def count_all_enemies()
 
-    puts "look_for_captives #{look_for_captives}"
-    puts "@captives #{@captives}"
 
     weird_captives = look_for_captives.length - @captives
 
