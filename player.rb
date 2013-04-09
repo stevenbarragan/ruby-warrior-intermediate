@@ -9,6 +9,7 @@ class Player
   def play_turn(warrior)
     @warrior = warrior
     continue = true
+    @captives = look_for_captives.length if !@captives
 
 
     enemies = look_for_enemies_arround
@@ -75,7 +76,10 @@ class Player
       if enemies.empty?
         captives = look_for_captives_arround
 
-        if warrior.health < min_feel_health(enemies) && warrior.listen.length > 0
+        puts "look_for_enemies #{look_for_enemies}"
+        puts "count_all_enemies #{count_all_enemies}"
+
+        if warrior.health < min_feel_health(enemies) && count_all_enemies > 0
           puts "rest 3"
           warrior.rest!
 
@@ -132,6 +136,7 @@ class Player
         else
           warrior.bind! enemies[0]
           @enemies << enemies[0]
+          @captives -= 1
         end
 
       else
@@ -215,7 +220,7 @@ class Player
   end
 
   def min_feel_health(enemies)
-    return 20
+    return 13
     enemies = enemies || @enemies
 
     if enemies.empty?
@@ -289,6 +294,18 @@ class Player
 
     enemies.length
     
+  end
+
+  def count_all_enemies()
+
+    puts "look_for_captives #{look_for_captives}"
+    puts "@captives #{@captives}"
+
+    weird_captives = look_for_captives.length - @captives
+
+    weird_captives = weird_captives > 0 ? weird_captives : 0
+
+    look_for_enemies.length + @enemies.length + weird_captives
   end
 
 end
