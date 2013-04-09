@@ -11,106 +11,147 @@ class Player
   
   def play_turn(warrior)
     @warrior = warrior
+    continue = true
 
     enemies = look_for_enemies_arround
 
-    tiking = look_for_ticking
+    ticking = look_for_ticking
 
-    if !tiking.empty?
+    if !ticking.empty?
+
       captives = look_for_captives_arround
 
       if !captives.empty?
         warrior.rescue! captives[0]
-
+        continue = false
       else
-        captives = look_for_captives
 
-        captive_direction = warrior.direction_of captives[0]
+        direction = get_ticking_good_direction ticking
 
-        if warrior.feel(captive_direction).enemy?
-          captive_direction = get_other_empty_direction(captive_direction)
+        puts "last_direccion #{@last_direccion}"
+        puts "direction #{direction}"
+
+        direction = get_other_empty_direction
+
+        puts "direction #{direction}"
+
+        if direction
+          walk! direction
+          continue = false
+        elsif enemies.length >= 2
+          walk! @last_direccion
+          continue = false
         end
-
-        puts "captive_direction #{captive_direction}"
-
-        warrior.walk! captive_direction
-
       end
 
-    elsif enemies.empty?
-      captives = look_for_captives_arround
+    end
+    
+    if continue
+      if enemies.empty?
+        captives = look_for_captives_arround
 
-      if warrior.health < min_fell_health(enemies)
-        warrior.rest!
+        if warrior.health < min_fell_health(enemies)
+          warrior.rest!
 
-      elsif @enemies.empty?
-
-        if captives.empty?
-
-          captives = look_for_captives
+        elsif @enemies.empty?
 
           if captives.empty?
 
-            enemies = look_for_enemies
+            captives = look_for_captives
 
-            if enemies.empty?
-              puts "walk #{warrior.direction_of_stairs}"
-              warrior.walk! warrior.direction_of_stairs
-            
-            else
+            if captives.empty?
 
-              puts "enemies #{enemies[0]}"
-              puts "min_health #{min_health(enemies[0])}"
+              enemies = look_for_enemies
 
-              if warrior.health < min_health(enemies[0].to_s)
-                warrior.rest!
-
+              if enemies.empty?
+                puts "walk #{warrior.direction_of_stairs}"
+                walk! warrior.direction_of_stairs
+              
               else
-                warrior.walk! warrior.direction_of enemies[0]
+
+                puts "enemies #{enemies[0]}"
+                puts "min_health #{min_health(enemies[0])}"
+
+                if warrior.health < min_health(enemies[0].to_s)
+                  warrior.rest!
+
+                else
+                  walk! warrior.direction_of enemies[0]
+
+                end
 
               end
+
+            else
+              walk! avoid_stars(warrior.direction_of captives[0])
 
             end
 
           else
-            warrior.walk! avoid_stars(warrior.direction_of captives[0])
+            puts "rescue! #{captives[0]}"
+            warrior.rescue! captives[0]
 
           end
 
         else
-          puts "rescue! #{captives[0]}"
-          warrior.rescue! captives[0]
+          puts "attack! #{@enemies[0]}"
+          warrior.attack! @enemies.shift
 
         end
 
+      elsif enemies.length >= 2
+        warrior.bind! enemies[0]
+        @enemies << enemies[0]
+
       else
-        puts "attack! #{@enemies[0]}"
-        warrior.attack! @enemies.shift
+        puts "attack! #{enemies[0]}"
+        warrior.attack! enemies[0]
 
       end
-
-    elsif enemies.length >= 2
-      warrior.bind! enemies[0]
-      @enemies << enemies[0]
-
-    else
-      puts "attack! #{enemies[0]}"
-      warrior.attack! enemies[0]
-
     end
 
   end
 
-  def get_other_empty_direction(direction)
-    if @directions1.include? direction
-      @directions2.each{ |direction|
-        return direction if @warrior.feel(direction).empty?
-      }
-    else
-      @directions1.each{ |direction|
-        return direction if @warrior.feel(direction).empty?
-      }
+  def walk!( direction )
+    case direction
+      when :right
+        @last_direccion = :left
+      when :left
+        @last_direccion = :right
+      when :forward
+        @last_direccion = :backward
+      when :backward
+        @last_direccion = :forward
     end
+
+    @enemies = []
+
+    @warrior.walk! direction
+  end
+
+  def enemy?(direction)
+    @warrior.feel(direction).enemy? || @enemies.include?(direction)
+  end
+
+  def get_ticking_good_direction(ticking)
+    ticking.each{|tick|
+      direction = @warrior.direction_of tick
+      return direction unless enemy?(direction)
+    }
+    false
+  end
+
+  def get_other_empty_direction()
+    directions = @directions.select{|direction|
+
+      !enemy?(direction) &&
+      @warrior.feel(direction).empty? &&
+      direction != @last_direccion
+    }
+
+    puts "directions #{directions}"
+
+    directions.sample
   end
 
   def look_for_ticking()
