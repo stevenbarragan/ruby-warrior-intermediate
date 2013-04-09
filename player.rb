@@ -11,7 +11,6 @@ class Player
     continue = true
     @captives = look_for_captives.length if !@captives
 
-
     enemies = look_for_enemies_arround
     ticking = look_for_ticking
 
@@ -124,7 +123,6 @@ class Player
       else
 
         warrior.attack! enemies[0]
-
       end
     end
 
@@ -274,24 +272,17 @@ class Player
 
   def look_for_all_enemies_direction(direction)
     enemies = []
-    
     @warrior.look(direction).each{ |feel|
       enemies << direction if feel.enemy?
     }
-
     enemies << direction if @enemies.include?( direction )
 
-    enemies.length
-    
+    enemies.length  
   end
 
   def count_all_enemies()
-
-
     weird_captives = look_for_captives.length - @captives
-
     weird_captives = weird_captives > 0 ? weird_captives : 0
-
     look_for_enemies.length + @enemies.length + weird_captives
   end
 
