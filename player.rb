@@ -35,7 +35,7 @@ class Player
 
         if !captives.empty? && less_tiking_distance(ticking) == 1
           puts "rescue 1"
-          warrior.rescue! captives[0]
+          rescue! captives[0]
           continue = false
         else
 
@@ -119,7 +119,7 @@ class Player
 
           else
             puts "rescue! #{captives[0]}"
-            warrior.rescue! captives[0]
+            rescue! captives[0]
 
           end
 
@@ -147,6 +147,14 @@ class Player
       end
     end
 
+  end
+
+  def rescue!(direction)
+    if @warrior.feel(direction).to_s == "Captive"
+      @warrior.rescue! direction
+    else
+      @warrior.attack! direction
+    end
   end
 
   def less_tiking_distance(ticking)
