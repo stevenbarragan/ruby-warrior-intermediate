@@ -3,6 +3,7 @@ class Player
   def initialize()
     @directions = [:left, :right , :backward, :forward]
     @enemies = []
+    @back_to_rest = false
   end
   
   def play_turn(warrior)
@@ -13,7 +14,14 @@ class Player
     enemies = look_for_enemies_arround
     ticking = look_for_ticking
 
-    if !ticking.empty?
+    if @back_to_rest &&warrior.health < 15
+      warrior.rest!
+      continue = false
+    else
+      @back_to_rest = false
+    end
+
+    if !ticking.empty? && continue
 
       puts "near_ticking?(ticking) #{near_ticking?(ticking)}"
 
@@ -63,8 +71,6 @@ class Player
     end
     
     if continue
-
-
       if enemies.empty?
         captives = look_for_captives_arround
 
@@ -117,9 +123,13 @@ class Player
         end
 
       elsif enemies.length >= 2
-
-        warrior.bind! enemies[0]
-        @enemies << enemies[0]
+        if warrior.health < 10 && @last_direccion
+          @back_to_rest = true
+          walk! @last_direccion
+        else
+          warrior.bind! enemies[0]
+          @enemies << enemies[0]
+        end
 
       else
 
