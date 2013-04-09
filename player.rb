@@ -2,10 +2,6 @@ class Player
 
   def initialize()
     @directions = [:left, :forward, :right , :backward]
-
-    @directions1 = [:left , :right]
-    @directions2 = [:forward , :backward]
-
     @enemies = []
   end
   
@@ -41,6 +37,13 @@ class Player
         elsif enemies.length >= 2
           walk! @last_direccion
           continue = false
+        else
+          direction = @warrior.direction_of ticking[0]
+          if @warrior.look(direction).select{|feel| feel.enemy? }.length > 1
+            @warrior.detonate! direction
+            continue = false
+
+          end
         end
       end
 
@@ -126,7 +129,7 @@ class Player
 
     @enemies = []
 
-    @warrior.walk! direction
+    @warrior.walk! direction    
   end
 
   def enemy?(direction)
