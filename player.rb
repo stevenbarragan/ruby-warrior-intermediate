@@ -1,7 +1,7 @@
 class Player
 
   def initialize()
-    @directions = [:left, :forward, :right , :backward]
+    @directions = [:left, :right , :backward, :forward]
     @enemies = []
   end
   
@@ -17,39 +17,40 @@ class Player
 
       puts "near_ticking?(ticking) #{near_ticking?(ticking)}"
 
-      if enemies.empty? && warrior.health < min_fell_health(enemies) && !near_ticking?(ticking)
-          warrior.rest!
-          continue = false
-      else
-
         all_enemies_arround = look_for_all_enemies_arround
 
         captives = look_for_captives_arround
 
-        if !captives.empty?
+        puts "less_tiking_distance(ticking) #{less_tiking_distance(ticking)}"
+
+        if !captives.empty? && less_tiking_distance(ticking) == 1
+          puts "rescue 1"
           warrior.rescue! captives[0]
           continue = false
         else
-
-          # if enemies.length == 1
-          #   if look_for_all_enemies_direction(enemies[0]) > 1
-          #     warrior.detonate!
-          #     continue = false
-          #   else
-          #     warrior.attack!
-          #     continue = false
-          # end
 
           direction = get_ticking_good_direction ticking
 
           direction = get_other_empty_direction if !direction
 
+          puts "direction #{direction}"
+
           if direction
+            puts "look_for_all_enemies_direction #{look_for_all_enemies_direction(direction)}"
+          end
+
+          if direction && look_for_all_enemies_direction(direction) <= 2
             walk! direction
+            continue = false
+
+          elsif enemies.empty? && warrior.health < min_feel_health(enemies) && !near_ticking?(ticking)
+            puts "rest 1"  
+            warrior.rest!
             continue = false
 
           elsif enemies.length == 1
             if near_ticking?(ticking)
+              puts "attack 1"
               warrior.attack! enemies[0]
               continue = false
 
@@ -58,24 +59,6 @@ class Player
               continue = false
             end
           end
-
-
-          # elsif enemies.length >= 2 && @last_direccion
-          #     walk! @last_direccion
-          #     continue = false
-            
-          #   direction = @warrior.direction_of ticking[0]
-            
-          #   # puts "direction #{direction}"
-          #   puts "look_for_all_enemies_direction(#{direction}).length #{look_for_all_enemies_direction(direction)}"
-
-          #   puts "enemies #{enemies}"
-
-          #   if look_for_all_enemies_direction(direction) > 1
-          #     @warrior.detonate! direction
-          #     continue = false
-          #   end
-        end #if healt
       end
     end
     
@@ -85,7 +68,7 @@ class Player
       if enemies.empty?
         captives = look_for_captives_arround
 
-        if warrior.health < min_fell_health(enemies)
+        if warrior.health < min_feel_health(enemies)
           warrior.rest!
 
         elsif @enemies.empty?
@@ -128,7 +111,7 @@ class Player
           end
 
         else
-          puts "attack! #{@enemies[0]}"
+          puts "attack! 2#{@enemies[0]}"
           warrior.attack! @enemies.shift
 
         end
@@ -139,12 +122,22 @@ class Player
         @enemies << enemies[0]
 
       else
-        puts "attack! #{enemies[0]}"
+
+        puts "attack! 3#{enemies[0]}"
         warrior.attack! enemies[0]
 
       end
     end
 
+  end
+
+  def less_tiking_distance(ticking)
+    less = 100
+    ticking.each{|tick|
+      tick_distance = @warrior.distance_of(tick)
+      less = tick_distance if tick_distance < less
+    }
+    less
   end
 
   def near_ticking?(ticking)
@@ -208,7 +201,7 @@ class Player
     end
   end
 
-  def min_fell_health(enemies)
+  def min_feel_health(enemies)
     return 20
     enemies = enemies || @enemies
 
