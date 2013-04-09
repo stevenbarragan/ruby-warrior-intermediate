@@ -9,47 +9,79 @@ class Player
     @warrior = warrior
     continue = true
 
-    enemies = look_for_enemies_arround
 
+    enemies = look_for_enemies_arround
     ticking = look_for_ticking
 
     if !ticking.empty?
 
-      captives = look_for_captives_arround
+      puts "near_ticking?(ticking) #{near_ticking?(ticking)}"
 
-      if !captives.empty?
-        warrior.rescue! captives[0]
-        continue = false
+      if enemies.empty? && warrior.health < min_fell_health(enemies) && !near_ticking?(ticking)
+          warrior.rest!
+          continue = false
       else
 
-        direction = get_ticking_good_direction ticking
+        all_enemies_arround = look_for_all_enemies_arround
 
-        puts "last_direccion #{@last_direccion}"
-        puts "direction #{direction}"
+        captives = look_for_captives_arround
 
-        direction = get_other_empty_direction
-
-        puts "direction #{direction}"
-
-        if direction
-          walk! direction
-          continue = false
-        elsif enemies.length >= 2
-          walk! @last_direccion
+        if !captives.empty?
+          warrior.rescue! captives[0]
           continue = false
         else
-          direction = @warrior.direction_of ticking[0]
-          if @warrior.look(direction).select{|feel| feel.enemy? }.length > 1
-            @warrior.detonate! direction
+
+          # if enemies.length == 1
+          #   if look_for_all_enemies_direction(enemies[0]) > 1
+          #     warrior.detonate!
+          #     continue = false
+          #   else
+          #     warrior.attack!
+          #     continue = false
+          # end
+
+          direction = get_ticking_good_direction ticking
+
+          direction = get_other_empty_direction if !direction
+
+          if direction
+            walk! direction
             continue = false
 
-          end
-        end
-      end
+          elsif enemies.length == 1
+            if near_ticking?(ticking)
+              warrior.attack! enemies[0]
+              continue = false
 
+            elsif look_for_all_enemies_direction(enemies[0]) > 1
+              warrior.detonate! enemies[0]
+              continue = false
+            end
+          end
+
+
+          # elsif enemies.length >= 2 && @last_direccion
+          #     walk! @last_direccion
+          #     continue = false
+            
+          #   direction = @warrior.direction_of ticking[0]
+            
+          #   # puts "direction #{direction}"
+          #   puts "look_for_all_enemies_direction(#{direction}).length #{look_for_all_enemies_direction(direction)}"
+
+          #   puts "enemies #{enemies}"
+
+          #   if look_for_all_enemies_direction(direction) > 1
+          #     @warrior.detonate! direction
+          #     continue = false
+          #   end
+        end #if healt
+      end
     end
     
     if continue
+
+
       if enemies.empty?
         captives = look_for_captives_arround
 
@@ -82,7 +114,6 @@ class Player
                   walk! warrior.direction_of enemies[0]
 
                 end
-
               end
 
             else
@@ -103,6 +134,7 @@ class Player
         end
 
       elsif enemies.length >= 2
+
         warrior.bind! enemies[0]
         @enemies << enemies[0]
 
@@ -113,6 +145,14 @@ class Player
       end
     end
 
+  end
+
+  def near_ticking?(ticking)
+    ticking.each{|tick|
+      puts @warrior.distance_of(tick)
+      return true if @warrior.distance_of(tick) < 3
+    }
+    false
   end
 
   def walk!( direction )
@@ -146,13 +186,10 @@ class Player
 
   def get_other_empty_direction()
     directions = @directions.select{|direction|
-
       !enemy?(direction) &&
       @warrior.feel(direction).empty? &&
       direction != @last_direccion
     }
-
-    puts "directions #{directions}"
 
     directions.sample
   end
@@ -172,6 +209,7 @@ class Player
   end
 
   def min_fell_health(enemies)
+    return 20
     enemies = enemies || @enemies
 
     if enemies.empty?
@@ -188,35 +226,40 @@ class Player
   def min_health(enemy)
     case enemy
       when "Thick Sludge"
-        puts "here 1"
-        16
+        20
       when "Sludge"
-        9
+        13
       else
-        puts "here 2"
         0
     end
   end
 
   def look_for_enemies_arround()
     direcctions = []
+    directtions_at_end = []
     @directions.each{ |direction|
       if @warrior.feel(direction).enemy?
-        if @warrior.feel(direction).to_s == "Thick Sludge"
+        if look_for_all_enemies_direction(direction) > 1
+          directtions_at_end << direction
+        elsif @warrior.feel(direction).to_s == "Thick Sludge"
           direcctions.unshift( direction )
         else
           direcctions << direction
         end
       end
     }
-    direcctions
+    direcctions + directtions_at_end
+  end
+
+  def look_for_all_enemies_arround()
+    look_for_enemies_arround + @enemies
   end
 
   def look_for_captives_arround()
     captives = []
 
     @directions.each{ |direction|
-      captives << direction if @warrior.feel(direction).captive?
+      captives << direction if @warrior.feel(direction).captive? && !@enemies.include?(direction)
     }
     captives
   end
@@ -227,6 +270,20 @@ class Player
 
   def look_for_enemies()
     @warrior.listen.select{ |feel| feel.enemy? }
+  end
+
+  def look_for_all_enemies_direction(direction)
+    enemies = []
+    
+    @warrior.look(direction).each{ |feel|
+      enemies << direction if feel.enemy?
+    }
+
+    enemies << direction if @enemies.include?( direction )
+
+    enemies.length
+    
+    # @warrior.listen.select{ |feel| feel.enemy? } + @enemies.map{|direction| @warrior.feel(direction)}
   end
 
 end
