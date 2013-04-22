@@ -14,15 +14,14 @@ class Player
     enemies = look_for_enemies_arround
     ticking = look_for_ticking
 
-    if @back_to_rest &&warrior.health < 15
+    if @back_to_rest && warrior.health < 15
       warrior.rest!
       continue = false
     else
       @back_to_rest = false
     end
 
-    if !ticking.empty? && continue
-
+    if !ticking.empty?  && continue
 
         all_enemies_arround = look_for_all_enemies_arround
 
@@ -37,10 +36,6 @@ class Player
           direction = get_ticking_good_direction ticking
 
           direction = get_other_empty_direction if !direction
-
-
-          if direction
-          end
 
           if direction && look_for_all_enemies_direction(direction) <= 2
             walk! direction
@@ -67,7 +62,6 @@ class Player
       if enemies.empty?
         captives = look_for_captives_arround
 
-
         if warrior.health < min_feel_health(enemies) && count_all_enemies > 0
           warrior.rest!
 
@@ -85,8 +79,6 @@ class Player
                 walk! warrior.direction_of_stairs
               
               else
-
-
                 if warrior.health < min_health(enemies[0].to_s)
                   warrior.rest!
 
@@ -121,8 +113,8 @@ class Player
         end
 
       else
-
         warrior.attack! enemies[0]
+
       end
     end
 
